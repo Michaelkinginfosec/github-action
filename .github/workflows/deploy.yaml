@@ -7,4 +7,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm install && npm run start:dev > output.txt && cat output.txt
+      - run: npm install && npm run build > output.txt && cat output.txt
