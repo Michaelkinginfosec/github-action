@@ -1,0 +1,20 @@
+name: Build Workflows
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Build deployment"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Running Tests before deployment"
+
+  deploy:
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "deploying..."
