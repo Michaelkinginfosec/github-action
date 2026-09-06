@@ -1,0 +1,9 @@
+name: My First CI/CD Pipeling
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello world Actions"
