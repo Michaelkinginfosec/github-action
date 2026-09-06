@@ -1,0 +1,12 @@
+services:
+  learning-docker-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: new-docker-nest-app
+
+    ports:
+      - '3000:3000'
+
+    environment:
+      - NODE_ENV=dev
