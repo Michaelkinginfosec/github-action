@@ -1,0 +1,10 @@
+name: Deploying nest app
+
+on: push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install && npm run start:dev > output.txt && cat output.txt
