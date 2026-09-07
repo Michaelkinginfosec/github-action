@@ -1,4 +1,5 @@
-name: Deploying nest app to AWS ECR
+name: Deploying nest app to AWS ECR and ECS
+
 on: push
 
 permissions:
@@ -6,15 +7,10 @@ permissions:
   contents: read
 
 jobs:
-  build-and-deploy-to-aws-ecr:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Debug OIDC token
-        run: |
-          IDTOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r '.value')
-          echo "$IDTOKEN" | cut -d '.' -f2 | base64 --decode | jq .
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -32,3 +28,26 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition nestjs-task \
+            --query taskDefinition \
+            > task-definition.json
+
+      - name: Update image in task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: nestjs-container
+          image: ${{ steps.login-ecr.outputs.registry }}/nestjs-app:${{ github.sha }}
+
+      - name: Deploy new task definition to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: nestjs-service
+          cluster: nestjs-cluster
+          wait-for-service-stability: true
